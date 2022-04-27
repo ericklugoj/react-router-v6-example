@@ -1,50 +1,43 @@
-import { useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import queryString from 'query-string'
-
+import React, { useMemo } from 'react';
+import queryString from 'query-string';
+import { HeroCard } from '../heroes/HeroCard';
 import { useForm } from '../../hooks/useForm';
+import { useLocation } from 'react-router-dom';
 import { getHeroesByName } from '../../selectors/getHeroesByName';
-import { HeroCard } from '../hero/HeroCard';
 
+export const SearchScreen = ({ history }) => {
 
-export const SearchScreen = () => {
-
-    const navigate = useNavigate();
     const location = useLocation();
+    const { q = '' } = queryString.parse( location.search );
 
-    const { q = '' } = queryString.parse(location.search);
-    
     const [ formValues, handleInputChange ] = useForm({
-        searchText: q,
+        searchText: q
     });
-
     const { searchText } = formValues;
-
-    const heroesFileted = useMemo( () => getHeroesByName(q), [q] );
+    
+    const heroesFiltered = useMemo(() => getHeroesByName( q ), [q])
 
 
     const handleSearch = (e) => {
-
         e.preventDefault();
-        navigate(`?q=${ searchText }`)
+        history.push(`?q=${ searchText }`);
     }
 
-
     return (
-        <>
-            <h1>Búsquedas</h1>
+        <div>
+            <h1>Search Screen</h1>
             <hr />
-
+            
             <div className="row">
-
+                
                 <div className="col-5">
-                    <h4>Buscar</h4>
+                    <h4> Search Form </h4>
                     <hr />
 
                     <form onSubmit={ handleSearch }>
                         <input 
                             type="text"
-                            placeholder="Buscar un héroe"
+                            placeholder="Find your hero"
                             className="form-control"
                             name="searchText"
                             autoComplete="off"
@@ -52,32 +45,41 @@ export const SearchScreen = () => {
                             onChange={ handleInputChange }
                         />
 
-
-                        <button 
-                            className="btn btn-outline-primary mt-1"
-                            type="submit">
-                            Buscar...
+                        <button
+                            type="submit"
+                            className="btn m-1 btn-block btn-outline-primary"
+                        >
+                            Search...
                         </button>
-
                     </form>
 
 
                 </div>
 
+
                 <div className="col-7">
-                    <h4>Resultados</h4>
+
+                    <h4> Results </h4>
                     <hr />
 
-                    {
-                        (q === '')
-                            ? <div className="alert alert-info"> Buscar un héroe </div>
-                            : ( heroesFileted.length === 0 ) 
-                                && <div className="alert alert-danger"> No hay resultados: { q } </div>
+                    { 
+                        (q ==='') 
+                            && 
+                            <div className="alert alert-info">
+                                Search a hero
+                            </div>
                     }
 
+                    { 
+                        (q !=='' && heroesFiltered.length === 0 ) 
+                            && 
+                            <div className="alert alert-danger">
+                                There is no a hero with { q }
+                            </div>
+                    }
 
                     {
-                        heroesFileted.map(hero => (
+                        heroesFiltered.map( hero => (
                             <HeroCard 
                                 key={ hero.id }
                                 { ...hero }
@@ -85,11 +87,11 @@ export const SearchScreen = () => {
                         ))
                     }
 
-
                 </div>
 
             </div>
 
-        </>
+
+        </div>
     )
 }
